@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  deno:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        deno: ["v2.x"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ matrix.deno }}
+      - run: deno fmt --check
+      - run: deno lint
+      - run: deno check src/mod.ts
+      - run: deno test --allow-env tests/
+      - run: deno test --allow-all integration/
+      - run: deno publish --dry-run --config jsr.json
